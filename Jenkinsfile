@@ -2,15 +2,16 @@ pipeline {
   agent any
 
   tools {
-    maven 'Maven_3' // Configure this in Jenkins Global Tool Configuration
-    jdk 'JDK_17'    // Configure JDK in Jenkins (Java 17 or Java 11 is fine)
+    maven 'Maven' // Configure this in Jenkins Global Tool Configuration
+    jdk 'OpenJDK'    // Configure JDK in Jenkins (Java 17 or Java 11 is fine)
+    dependencyCheck 'ODC' // Uses Dependency-Check 12.1.3
   }
 
   stages {
 
     stage('Checkout') {
       steps {
-        git url: 'https://github.com/rueben-hytech/VulnerableApp.git', branch: 'main'
+        git url: 'https://github.com/rueben-hytech/VulnerableApp.git', branch: 'master'
       }
     }
 
@@ -22,23 +23,21 @@ pipeline {
 
     stage('SCA: OWASP Dependency-Check') {
       steps {
-        sh '''
-          wget https://github.com/jeremylong/DependencyCheck/releases/download/v8.4.0/dependency-check-8.4.0-release.zip
-          unzip dependency-check-8.4.0-release.zip -d dc
-          ./dc/dependency-check/bin/dependency-check.sh --project "VulnerableApp SCA" --scan . --format "HTML" --out reports
-        '''
+        dependencyCheck additionalArguments: '--format XML --format HTML --scan .', odcInstallation: 'ODC'
       }
     }
 
     stage('Archive SCA Report') {
       steps {
-        archiveArtifacts artifacts: 'reports/**', fingerprint: true
+        archiveArtifacts artifacts: '**/dependency-check-report.xml', fingerprint: true
       }
     }
   }
 
   post {
     always {
+      // This renders the interactive vulnerability results UI in Jenkins
+      dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
       echo "Cleanup workspace..."
       deleteDir()
     }
