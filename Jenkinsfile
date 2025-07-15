@@ -4,7 +4,7 @@ pipeline {
   tools {
     maven 'Maven' // Configure this in Jenkins Global Tool Configuration
     jdk 'OpenJDK'    // Configure JDK in Jenkins (Java 17 or Java 11 is fine)
-    dependencyCheck 'ODC' // Uses Dependency-Check 12.1.3
+    Dependency-Check 'ODC' // Uses Dependency-Check 12.1.3
   }
 
   stages {
