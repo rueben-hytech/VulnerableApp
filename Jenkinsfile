@@ -3,7 +3,7 @@ pipeline {
 
   tools {
     gradle 'Gradle'        // Make sure this matches Global Tool Config name
-    jdk 'OpenJDK17'        // You must add JDK 17 in Global Tool Configuration
+    jdk 'OpenJDK'        // You must add JDK 17 in Global Tool Configuration
   }
 
   stages {
