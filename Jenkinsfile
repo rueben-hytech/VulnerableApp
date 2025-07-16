@@ -2,11 +2,12 @@ pipeline {
   agent any
 
   tools {
-    gradle 'Gradle'     // Must be configured in Jenkins Global Tool Configuration
-    jdk 'OpenJDK'       // Java 11 or 17
+    gradle 'Gradle'        // Make sure this matches Global Tool Config name
+    jdk 'OpenJDK17'        // You must add JDK 17 in Global Tool Configuration
   }
 
   stages {
+
     stage('Checkout') {
       steps {
         git url: 'https://github.com/rueben-hytech/VulnerableApp.git', branch: 'master'
@@ -16,8 +17,7 @@ pipeline {
     stage('Build with Gradle') {
       steps {
         dir('DepencyCheck') {
-          // Use the wrapper if present, fallback to Jenkins' Gradle
-          sh './gradlew clean build -x test || gradle clean build -x test'
+          sh 'gradle clean build -x test'
         }
       }
     }
@@ -32,20 +32,20 @@ pipeline {
 
     stage('Archive Reports') {
       steps {
-        archiveArtifacts artifacts: 'DepencyCheck/**/dependency-check-report.*', fingerprint: true
-        sh 'echo "Files in DepencyCheck folder:" && ls -la DepencyCheck'
+        archiveArtifacts artifacts: '**/dependency-check-report.xml', fingerprint: true
+        sh 'pwd && ls -la'
       }
     }
   }
 
   post {
     always {
-      dependencyCheckPublisher pattern: 'DepencyCheck/**/dependency-check-report.xml'
-      echo "Cleaning up workspace..."
+      dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+      echo 'Cleaning up workspace...'
       deleteDir()
     }
     failure {
-      echo "❌ Pipeline failed"
+      echo '❌ Pipeline failed'
     }
   }
 }
