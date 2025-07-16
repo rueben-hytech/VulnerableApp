@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   tools {
-    maven 'Maven'     // Make sure this is configured in Jenkins
+    maven 'Maven'     // Make sure Maven is set up in Jenkins global config
     jdk 'OpenJDK'     // Java 11 or 17
   }
 
@@ -16,7 +16,7 @@ pipeline {
 
     stage('Build with Maven') {
       steps {
-        dir('VulnerableApp') {  // Replace with actual subfolder if needed
+        dir('DepencyCheck') {
           sh 'mvn clean install -DskipTests'
         }
       }
@@ -24,7 +24,7 @@ pipeline {
 
     stage('SCA: OWASP Dependency-Check') {
       steps {
-        dir('VulnerableApp') {
+        dir('DepencyCheck') {
           dependencyCheck additionalArguments: '--format XML --format HTML --scan .', odcInstallation: 'ODC'
         }
       }
@@ -32,15 +32,15 @@ pipeline {
 
     stage('Archive SCA Report') {
       steps {
-        archiveArtifacts artifacts: '**/dependency-check-report.xml', fingerprint: true
-        sh 'pwd && ls -la'
+        archiveArtifacts artifacts: 'DepencyCheck/**/dependency-check-report.*', fingerprint: true
+        sh 'echo "Listing DepencyCheck report folder:" && ls -la DepencyCheck/'
       }
     }
   }
 
   post {
     always {
-      dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+      dependencyCheckPublisher pattern: 'DepencyCheck/**/dependency-check-report.xml'
       echo "Cleanup workspace..."
       deleteDir()
     }
