@@ -15,10 +15,8 @@ pipeline {
     }
 
     stage('Build with Gradle') {
-      steps {
-        dir('DepencyCheck') {
-          sh 'gradle clean build -x test'
-        }
+      steps {        
+            sh './gradlew clean build -x test'
       }
     }
 
